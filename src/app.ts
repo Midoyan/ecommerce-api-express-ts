@@ -1,4 +1,4 @@
-import { userRoutes } from '#routes';
+import { userRoutes, categoryRoutes } from '#routes';
 import "#db";
 import express from 'express';
 import { errorHandler, notFoundHandler } from '#middleware';
@@ -8,6 +8,7 @@ const port = 3000;
 
 app.use(express.json());
 app.use('/users', userRoutes);
+app.use('/categories', categoryRoutes);
 app.use(errorHandler);
 app.use('*splat', notFoundHandler);
 
