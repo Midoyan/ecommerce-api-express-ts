@@ -74,6 +74,11 @@ export const updateUser: RequestHandler<UserParams, unknown, UserBody> = async (
         throw new Error('Invalid user id format', { cause: { status: 400 } });
     }
 
+    const existingUser = await User.findById(id).select('_id').lean();
+    if (!existingUser) {
+        throw new Error('User not found', { cause: { status: 404 } });
+    }
+
     // Allow keeping your current email, but block using an email that belongs to another user.
     const emailOwner = await User.findOne({ email }).select('_id').lean();
     if (emailOwner && String(emailOwner._id) !== id) {
@@ -87,10 +92,6 @@ export const updateUser: RequestHandler<UserParams, unknown, UserBody> = async (
             returnDocument: 'after',
             runValidators: true,
         }).select('-password').lean();
-
-        if (!user) {
-            throw new Error('User not found', { cause: { status: 404 } });
-        }
 
         res.json({ message: 'User updated successfully', user });
     } catch (error) {
