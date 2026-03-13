@@ -3,10 +3,15 @@ import { Router } from "express";
 
 const categoryRoutes = Router();
 
-categoryRoutes.get('/', getCategories);
-categoryRoutes.post('/', createCategory);
-categoryRoutes.get('/:id', getCategory);
-categoryRoutes.put('/:id', updateCategory);
-categoryRoutes.delete('/:id', deleteCategory);
+categoryRoutes
+	.route('/')
+	.get(getCategories)
+	.post(createCategory);
+
+categoryRoutes
+	.route('/:id')
+	.get(getCategory)
+	.put(updateCategory)
+	.delete(deleteCategory);
 
 export default categoryRoutes;

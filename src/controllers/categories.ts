@@ -18,8 +18,8 @@ export const createCategory: RequestHandler<{}, unknown, CategoryBody> = async (
     if (!name) {
         throw new Error('Name is required', { cause: { status: 400 } });
     }
-    const category = await Category.create({ name });
-    res.status(201).json(category);
+    const createdCategory = await Category.create({ name });
+    res.status(201).json(createdCategory);
 }
 
 export const getCategory: RequestHandler<CategoryParams> = async (req, res) => {
@@ -28,12 +28,12 @@ export const getCategory: RequestHandler<CategoryParams> = async (req, res) => {
         throw new Error('Invalid category id format', { cause: { status: 400 } });
     }
 
-    const category = await Category.findById(id).lean();
-    if (!category) {
+    const foundCategory = await Category.findById(id).lean();
+    if (!foundCategory) {
         throw new Error('Category not found', { cause: { status: 404 } });
     }
 
-    res.json(category);
+    res.json(foundCategory);
 }
 
 export const updateCategory: RequestHandler<CategoryParams, unknown, CategoryBody> = async (req, res) => {
@@ -47,8 +47,8 @@ export const updateCategory: RequestHandler<CategoryParams, unknown, CategoryBod
         throw new Error('Invalid category id format', { cause: { status: 400 } });
     }
 
-    const categoryToUpdate = await Category.findById(id).select('_id').lean();
-    if (!categoryToUpdate) {
+    const existingCategoryById = await Category.findById(id).select('_id').lean();
+    if (!existingCategoryById) {
         throw new Error('Category not found', { cause: { status: 404 } });
     }
 
@@ -57,11 +57,11 @@ export const updateCategory: RequestHandler<CategoryParams, unknown, CategoryBod
         throw new Error('Category already exists', { cause: { status: 409 } });
     }
 
-    const category = await Category.findByIdAndUpdate(id, { name }, { returnDocument: 'after' }).lean();
-    if (!category) {    
+    const updatedCategory = await Category.findByIdAndUpdate(id, { name }, { returnDocument: 'after' }).lean();
+    if (!updatedCategory) {    
         throw new Error('Category not found', { cause: { status: 404 } });
     }
-    res.json(category);
+    res.json(updatedCategory);
 }
 
 export const deleteCategory: RequestHandler<CategoryParams> = async (req, res) => {
@@ -70,8 +70,8 @@ export const deleteCategory: RequestHandler<CategoryParams> = async (req, res) =
         throw new Error('Invalid category id format', { cause: { status: 400 } });
     }
 
-    const category = await Category.findByIdAndDelete(id).lean();
-    if (!category) {
+    const deletedCategory = await Category.findByIdAndDelete(id).lean();
+    if (!deletedCategory) {
         throw new Error('Category not found', { cause: { status: 404 } });
     }
 
