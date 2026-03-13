@@ -3,10 +3,15 @@ import { Router } from "express";
 
 const userRoutes = Router();
 
-userRoutes.get('/', getUsers);
-userRoutes.post('/', createUser);
-userRoutes.get('/:id', getUser);
-userRoutes.put('/:id', updateUser);
-userRoutes.delete('/:id', deleteUser);
+userRoutes
+	.route('/')
+	.get(getUsers)
+	.post(createUser);
+
+userRoutes
+	.route('/:id')
+	.get(getUser)
+	.put(updateUser)
+	.delete(deleteUser);
 
 export default userRoutes;

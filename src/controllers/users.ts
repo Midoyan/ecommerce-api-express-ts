@@ -35,8 +35,8 @@ export const createUser: RequestHandler<{}, unknown, UserBody> = async (req, res
     const hashedPassword = await bcrypt.hash(password, 10);
 
     try {
-        const user = await User.create({ name, email, password: hashedPassword });
-        const { password: _password, ...safeUser } = user.toObject();
+        const createdUser = await User.create({ name, email, password: hashedPassword });
+        const { password: _password, ...safeUser } = createdUser.toObject();
         return res.status(201).json(safeUser);
     } catch (error) {
         if (isDuplicateKeyError(error)) {
@@ -53,13 +53,13 @@ export const getUser: RequestHandler<UserParams> = async (req, res) => {
         throw new Error('Invalid user id format', { cause: { status: 400 } });
     }
 
-    const user = await User.findById(id).lean();
+    const foundUser = await User.findById(id).select('-password').lean();
 
-    if (!user) {
+    if (!foundUser) {
         throw new Error('User not found', { cause: { status: 404 } });
     }
 
-    res.json(user);
+    res.json(foundUser);
 }
 
 export const updateUser: RequestHandler<UserParams, unknown, UserBody> = async (req, res) => {
@@ -88,12 +88,12 @@ export const updateUser: RequestHandler<UserParams, unknown, UserBody> = async (
     const newUserData = { name, email, password: await bcrypt.hash(password, 10) };
 
     try {
-        const user = await User.findByIdAndUpdate(id, newUserData, {
+        const updatedUser = await User.findByIdAndUpdate(id, newUserData, {
             returnDocument: 'after',
             runValidators: true,
         }).select('-password').lean();
 
-        res.json({ message: 'User updated successfully', user });
+        res.json(updatedUser);
     } catch (error) {
         if (isDuplicateKeyError(error)) {
             throw new Error('User already exists', { cause: { status: 409 } });
@@ -107,9 +107,9 @@ export const deleteUser: RequestHandler<UserParams> = async (req, res) => {
     if (!isValidObjectId(id)) {
         throw new Error('Invalid user id format', { cause: { status: 400 } });
     }
-    const user = await User.findByIdAndDelete(id).lean();
+    const deletedUser = await User.findByIdAndDelete(id).lean();
 
-    if (!user) {
+    if (!deletedUser) {
         throw new Error('User not found', { cause: { status: 404 } });
     }
 
