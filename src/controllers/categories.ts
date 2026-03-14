@@ -1,5 +1,5 @@
-import { Category } from "#models";
-import type { RequestHandler } from "express";
+import { Category } from '#models';
+import type { RequestHandler } from 'express';
 import { isValidObjectId } from 'mongoose';
 
 type CategoryParams = { id: string };
@@ -18,6 +18,12 @@ export const createCategory: RequestHandler<{}, unknown, CategoryBody> = async (
     if (!name) {
         throw new Error('Name is required', { cause: { status: 400 } });
     }
+
+    const existingCategory = await Category.findOne({ name }).select('_id').lean();
+    if (existingCategory) {
+        throw new Error('Category already exists', { cause: { status: 409 } });
+    }
+
     const createdCategory = await Category.create({ name });
     res.status(201).json(createdCategory);
 }

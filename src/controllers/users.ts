@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express';
-import { User } from "#models";
+import { User } from '#models';
 import bcrypt from 'bcrypt';
 import { isValidObjectId } from 'mongoose';
 
@@ -9,15 +9,6 @@ type UserBody = {
     name?: string;
     email?: string;
     password?: string;
-};
-
-const isDuplicateKeyError = (error: unknown): boolean => {
-    return (
-        typeof error === 'object' &&
-        error !== null &&
-        'code' in error &&
-        (error as { code?: number }).code === 11000
-    );
 };
 
 export const getUsers: RequestHandler = async (req, res) => {
@@ -32,18 +23,16 @@ export const createUser: RequestHandler<{}, unknown, UserBody> = async (req, res
         throw new Error('Name, email, and password are required', { cause: { status: 400 } });
     }
 
+    const userExists = await User.exists({ email });
+    if (userExists) {
+        throw new Error('User already exists', { cause: { status: 409 } });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    try {
-        const createdUser = await User.create({ name, email, password: hashedPassword });
-        const { password: _password, ...safeUser } = createdUser.toObject();
-        return res.status(201).json(safeUser);
-    } catch (error) {
-        if (isDuplicateKeyError(error)) {
-            throw new Error('User already exists', { cause: { status: 409 } });
-        }
-        throw error;
-    }
+    const createdUser = await User.create({ name, email, password: hashedPassword });
+    const { password: _password, ...safeUser } = createdUser.toObject();
+    return res.status(201).json(safeUser);
 }
 
 export const getUser: RequestHandler<UserParams> = async (req, res) => {
@@ -79,27 +68,23 @@ export const updateUser: RequestHandler<UserParams, unknown, UserBody> = async (
         throw new Error('User not found', { cause: { status: 404 } });
     }
 
-    // Allow keeping your current email, but block using an email that belongs to another user.
-    const emailOwner = await User.findOne({ email }).select('_id').lean();
-    if (emailOwner && String(emailOwner._id) !== id) {
+    const emailTakenByAnotherUser = await User.exists({ email, _id: { $ne: id } });
+    if (emailTakenByAnotherUser) {
         throw new Error('User already exists', { cause: { status: 409 } });
     }
 
     const newUserData = { name, email, password: await bcrypt.hash(password, 10) };
 
-    try {
-        const updatedUser = await User.findByIdAndUpdate(id, newUserData, {
-            returnDocument: 'after',
-            runValidators: true,
-        }).select('-password').lean();
+    const updatedUser = await User.findByIdAndUpdate(id, newUserData, {
+        returnDocument: 'after',
+        runValidators: true,
+    }).select('-password').lean();
 
-        res.json(updatedUser);
-    } catch (error) {
-        if (isDuplicateKeyError(error)) {
-            throw new Error('User already exists', { cause: { status: 409 } });
-        }
-        throw error;
+    if (!updatedUser) {
+        throw new Error('User not found', { cause: { status: 404 } });
     }
+
+    res.json(updatedUser);
 }
 
 export const deleteUser: RequestHandler<UserParams> = async (req, res) => {
@@ -113,5 +98,5 @@ export const deleteUser: RequestHandler<UserParams> = async (req, res) => {
         throw new Error('User not found', { cause: { status: 404 } });
     }
 
-    res.status(204).send()
+    res.status(204).send();
 }
