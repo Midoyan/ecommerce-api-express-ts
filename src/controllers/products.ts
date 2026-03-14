@@ -1,6 +1,6 @@
-import { Category, Product } from "#models";
-import type { RequestHandler } from "express";
-import { isValidObjectId } from "mongoose";
+import { Category, Product } from '#models';
+import type { RequestHandler } from 'express';
+import { isValidObjectId } from 'mongoose';
 
 type ProductParams = { id: string };
 type ProductQuery = { categoryId?: string };
@@ -18,7 +18,7 @@ export const getProducts: RequestHandler<{}, unknown, unknown, ProductQuery> = a
 
     if (categoryId != null) {
         if (typeof categoryId !== 'string' || !isValidObjectId(categoryId)) { 
-            //?categoryId=a&categoryId=b Then many parsers produce an array like ["a", "b"] => check for type string
+            //?categoryId=a&categoryId=b Then many parsers produce an array like ['a', 'b'] => check for type string
             throw new Error('Invalid categoryId format', { cause: { status: 400 } });
         }
         filter.categoryId = categoryId;
@@ -31,7 +31,7 @@ export const getProducts: RequestHandler<{}, unknown, unknown, ProductQuery> = a
 export const createProduct: RequestHandler<{}, unknown, ProductBody> = async (req, res) => {
     const { name, description, price, categoryId } = req.body;
     if (!name || !categoryId || price == null) {
-        throw new Error('Name, price and categoryId are required', { cause: { status: 400 } });
+        throw new Error('Name, price, and categoryId are required', { cause: { status: 400 } });
     }
 
     const parsedPrice = typeof price === 'string' ? Number(price) : price;
@@ -46,7 +46,7 @@ export const createProduct: RequestHandler<{}, unknown, ProductBody> = async (re
 
     const foundCategory = await Category.findById(categoryId);
     if (!foundCategory) {
-        throw new Error('Category doesn\'t exist', { cause: { status: 404 } });
+        throw new Error('Category not found', { cause: { status: 404 } });
     }
 
     const createdProduct = await Product.create({ name, description, price: parsedPrice, categoryId });
@@ -56,7 +56,7 @@ export const createProduct: RequestHandler<{}, unknown, ProductBody> = async (re
 export const getProduct: RequestHandler<ProductParams> = async (req, res) => {
     const { id } = req.params;
     if (!isValidObjectId(id)) {
-        throw new Error('Invalid id format', { cause: { status: 400 } });
+        throw new Error('Invalid product id format', { cause: { status: 400 } });
     }
 
     const foundProduct = await Product.findById(id).lean();
@@ -71,11 +71,11 @@ export const updateProduct: RequestHandler<ProductParams, unknown, ProductBody> 
     const { id } = req.params;
     const { name, description, price, categoryId } = req.body;
     if (!isValidObjectId(id)) {
-        throw new Error('Invalid id format', { cause: { status: 400 } });
+        throw new Error('Invalid product id format', { cause: { status: 400 } });
     }
     
     if (!name || !categoryId || price == null) {
-        throw new Error('Name, price and categoryId are required', { cause: { status: 400 } });
+        throw new Error('Name, price, and categoryId are required', { cause: { status: 400 } });
     }
 
     const parsedPrice = typeof price === 'string' ? Number(price) : price;
@@ -89,7 +89,7 @@ export const updateProduct: RequestHandler<ProductParams, unknown, ProductBody> 
 
     const foundCategory = await Category.findById(categoryId);
     if (!foundCategory) {
-        throw new Error('Category doesn\'t exist', { cause: { status: 404 } });
+        throw new Error('Category not found', { cause: { status: 404 } });
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(id, { name, description, price: parsedPrice, categoryId }, { returnDocument: 'after' }).lean();
@@ -103,7 +103,7 @@ export const updateProduct: RequestHandler<ProductParams, unknown, ProductBody> 
 export const deleteProduct: RequestHandler<ProductParams> = async (req, res) => {
     const { id } = req.params;
     if (!isValidObjectId(id)) {
-        throw new Error('Invalid id format', { cause: { status: 400 } });
+        throw new Error('Invalid product id format', { cause: { status: 400 } });
     }
 
     const deletedProduct = await Product.findByIdAndDelete(id).lean();

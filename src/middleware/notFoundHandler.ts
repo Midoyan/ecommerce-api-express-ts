@@ -1,7 +1,7 @@
-import type { RequestHandler } from "express";
+import type { RequestHandler } from 'express';
 
 const notFoundHandler: RequestHandler = (req, res) => {
-    res.status(404).json({ error: "Not Found" });
+    res.status(404).json({ error: 'Not Found' });
 }
 
 export default notFoundHandler;

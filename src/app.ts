@@ -1,5 +1,5 @@
-import { userRoutes, categoryRoutes, productRoutes } from '#routes';
-import "#db";
+import { userRoutes, categoryRoutes, productRoutes, orderRoutes } from '#routes';
+import '#db';
 import express from 'express';
 import { errorHandler, notFoundHandler } from '#middleware';
 
@@ -10,6 +10,7 @@ app.use(express.json());
 app.use('/users', userRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/products', productRoutes);
+app.use('/orders', orderRoutes);
 app.use(errorHandler);
 app.use('*splat', notFoundHandler);
 

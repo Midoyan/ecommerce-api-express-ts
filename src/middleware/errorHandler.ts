@@ -1,4 +1,4 @@
-import type { ErrorRequestHandler } from "express";
+import type { ErrorRequestHandler } from 'express';
 
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     process.env.NODE_ENV !== 'production' &&
