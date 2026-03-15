@@ -1,22 +1,21 @@
 import type { RequestHandler } from 'express';
 import { User } from '#models';
+import { normalize } from '#utils';
 import bcrypt from 'bcrypt';
 import { isValidObjectId } from 'mongoose';
+import { z } from 'zod/v4';
+import { userInputSchema } from '#schemas';
 
 type UserParams = { id: string };
 
-type UserBody = {
-    name?: string;
-    email?: string;
-    password?: string;
-};
+type UserInputDTO = z.infer<typeof userInputSchema>;
 
 export const getUsers: RequestHandler = async (req, res) => {
     const users = await User.find().select('-password').lean();
-    res.json(users);
+    res.json(users.map(normalize));
 }
 
-export const createUser: RequestHandler<{}, unknown, UserBody> = async (req, res) => {
+export const createUser: RequestHandler<{}, unknown, UserInputDTO> = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
@@ -30,9 +29,9 @@ export const createUser: RequestHandler<{}, unknown, UserBody> = async (req, res
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const createdUser = await User.create({ name, email, password: hashedPassword });
+    const createdUser = await User.create({ name, email, password: hashedPassword } satisfies UserInputDTO);
     const { password: _password, ...safeUser } = createdUser.toObject();
-    return res.status(201).json(safeUser);
+    return res.status(201).json(normalize(safeUser));
 }
 
 export const getUser: RequestHandler<UserParams> = async (req, res) => {
@@ -48,10 +47,10 @@ export const getUser: RequestHandler<UserParams> = async (req, res) => {
         throw new Error('User not found', { cause: { status: 404 } });
     }
 
-    res.json(foundUser);
+    res.json(normalize(foundUser));
 }
 
-export const updateUser: RequestHandler<UserParams, unknown, UserBody> = async (req, res) => {
+export const updateUser: RequestHandler<UserParams, unknown, UserInputDTO> = async (req, res) => {
     const { id } = req.params;
     const { name, email, password } = req.body;
 
@@ -75,7 +74,7 @@ export const updateUser: RequestHandler<UserParams, unknown, UserBody> = async (
 
     const newUserData = { name, email, password: await bcrypt.hash(password, 10) };
 
-    const updatedUser = await User.findByIdAndUpdate(id, newUserData, {
+    const updatedUser = await User.findByIdAndUpdate(id, newUserData satisfies UserInputDTO, {
         returnDocument: 'after',
         runValidators: true,
     }).select('-password').lean();
@@ -84,7 +83,7 @@ export const updateUser: RequestHandler<UserParams, unknown, UserBody> = async (
         throw new Error('User not found', { cause: { status: 404 } });
     }
 
-    res.json(updatedUser);
+    res.json(normalize(updatedUser));
 }
 
 export const deleteUser: RequestHandler<UserParams> = async (req, res) => {

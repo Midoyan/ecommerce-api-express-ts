@@ -1,22 +1,22 @@
 import { Order, Product, User } from '#models';
+import { orderInputSchema } from '#schemas';
+import { normalizeOrder } from '#utils';
 import type { RequestHandler } from 'express';
 import { isValidObjectId } from 'mongoose';
-
-type OrderBody = {
-    userId: string,
-    products: { productId: string, quantity: number }[]
-}
+import { z } from 'zod/v4';
 
 type OrderParams = {
     id: string
 }
 
+type OrderInputDTO = z.infer<typeof orderInputSchema>;
+
 export const getOrders: RequestHandler = async (req, res) => {
     const orders = await Order.find().lean();
-    res.json(orders);
+    res.json(orders.map(normalizeOrder));
 }
 
-export const createOrder: RequestHandler<{}, unknown, OrderBody> = async (req, res) => {
+export const createOrder: RequestHandler<{}, unknown, OrderInputDTO> = async (req, res) => {
     const { userId, products } = req.body;
     if (!userId || !products) {
         throw new Error('userId and products are required', { cause: { status: 400 } });
@@ -50,7 +50,7 @@ export const createOrder: RequestHandler<{}, unknown, OrderBody> = async (req, r
     }
 
     const order = await Order.create({ userId, products, total });
-    res.status(201).json(order);
+    res.status(201).json(normalizeOrder(order.toObject()));
 }
 
 export const getOrder: RequestHandler<OrderParams> = async (req, res) => {
@@ -63,10 +63,10 @@ export const getOrder: RequestHandler<OrderParams> = async (req, res) => {
         throw new Error('Order not found', { cause: { status: 404 } });
     }
 
-    res.json(foundOrder);
+    res.json(normalizeOrder(foundOrder));
 }
 
-export const updateOrder: RequestHandler<OrderParams, unknown, OrderBody> = async (req, res) => {
+export const updateOrder: RequestHandler<OrderParams, unknown, OrderInputDTO> = async (req, res) => {
     const { id } = req.params;
     const { userId, products } = req.body;
     if (!isValidObjectId(id)) {
@@ -106,7 +106,7 @@ export const updateOrder: RequestHandler<OrderParams, unknown, OrderBody> = asyn
     if (!updatedOrder) {
         throw new Error('Order not found', { cause: { status: 404 } });
     }
-    res.json(updatedOrder);
+    res.json(normalizeOrder(updatedOrder));
 }
 
 export const deleteOrder: RequestHandler<OrderParams> = async (req, res) => {
