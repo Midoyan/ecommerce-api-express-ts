@@ -1,31 +1,32 @@
 import { Category } from '#models';
+import { normalize } from '#utils';
 import type { RequestHandler } from 'express';
 import { isValidObjectId } from 'mongoose';
+import { z } from 'zod/v4';
+import { categoryInputSchema } from '#schemas';
 
 type CategoryParams = { id: string };
 
-type CategoryBody = {
-    name: string
-}
+type CategoryInputDTO = z.infer<typeof categoryInputSchema>;
 
 export const getCategories: RequestHandler = async (req, res) => {
     const categories = await Category.find().lean();
-    res.json(categories);
+    res.json(categories.map(normalize));
 }
 
-export const createCategory: RequestHandler<{}, unknown, CategoryBody> = async (req, res) => {
+export const createCategory: RequestHandler<{}, unknown, CategoryInputDTO> = async (req, res) => {
     const { name } = req.body;
     if (!name) {
         throw new Error('Name is required', { cause: { status: 400 } });
     }
 
-    const existingCategory = await Category.findOne({ name }).select('_id').lean();
+    const existingCategory = await Category.findOne({ name } satisfies CategoryInputDTO).select('_id').lean();
     if (existingCategory) {
         throw new Error('Category already exists', { cause: { status: 409 } });
     }
 
-    const createdCategory = await Category.create({ name });
-    res.status(201).json(createdCategory);
+    const createdCategory = await Category.create({ name } satisfies CategoryInputDTO);
+    res.status(201).json(normalize(createdCategory.toObject()));
 }
 
 export const getCategory: RequestHandler<CategoryParams> = async (req, res) => {
@@ -39,10 +40,10 @@ export const getCategory: RequestHandler<CategoryParams> = async (req, res) => {
         throw new Error('Category not found', { cause: { status: 404 } });
     }
 
-    res.json(foundCategory);
+    res.json(normalize(foundCategory));
 }
 
-export const updateCategory: RequestHandler<CategoryParams, unknown, CategoryBody> = async (req, res) => {
+export const updateCategory: RequestHandler<CategoryParams, unknown, CategoryInputDTO> = async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
     if (!name) {
@@ -58,16 +59,16 @@ export const updateCategory: RequestHandler<CategoryParams, unknown, CategoryBod
         throw new Error('Category not found', { cause: { status: 404 } });
     }
 
-    const existingCategory = await Category.findOne({ name }).select('_id').lean();
+    const existingCategory = await Category.findOne({ name } satisfies CategoryInputDTO).select('_id').lean();
     if (existingCategory && String(existingCategory._id) !== id) {
         throw new Error('Category already exists', { cause: { status: 409 } });
     }
 
-    const updatedCategory = await Category.findByIdAndUpdate(id, { name }, { returnDocument: 'after' }).lean();
-    if (!updatedCategory) {    
+    const updatedCategory = await Category.findByIdAndUpdate(id, { name } satisfies CategoryInputDTO, { returnDocument: 'after' }).lean();
+    if (!updatedCategory) {
         throw new Error('Category not found', { cause: { status: 404 } });
     }
-    res.json(updatedCategory);
+    res.json(normalize(updatedCategory));
 }
 
 export const deleteCategory: RequestHandler<CategoryParams> = async (req, res) => {
