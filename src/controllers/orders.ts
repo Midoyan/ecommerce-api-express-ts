@@ -1,13 +1,11 @@
 import { Order, Product, User } from '#models';
-import { orderInputSchema } from '#schemas';
+import { orderInputSchema, orderParamsSchema } from '#schemas';
 import { normalizeOrder } from '#utils';
 import type { RequestHandler } from 'express';
 import { isValidObjectId } from 'mongoose';
 import { z } from 'zod/v4';
 
-type OrderParams = {
-    id: string
-}
+type OrderParams = z.infer<typeof orderParamsSchema>
 
 type OrderInputDTO = z.infer<typeof orderInputSchema>;
 

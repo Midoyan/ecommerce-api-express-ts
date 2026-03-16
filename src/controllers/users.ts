@@ -4,9 +4,9 @@ import { normalize } from '#utils';
 import bcrypt from 'bcrypt';
 import { isValidObjectId } from 'mongoose';
 import { z } from 'zod/v4';
-import { userInputSchema } from '#schemas';
+import { userInputSchema, userParamsSchema } from '#schemas';
 
-type UserParams = { id: string };
+type UserParams = z.infer<typeof userParamsSchema>;
 
 type UserInputDTO = z.infer<typeof userInputSchema>;
 

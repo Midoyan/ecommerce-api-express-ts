@@ -3,9 +3,9 @@ import { normalize } from '#utils';
 import type { RequestHandler } from 'express';
 import { isValidObjectId } from 'mongoose';
 import { z } from 'zod/v4';
-import { categoryInputSchema } from '#schemas';
+import { categoryInputSchema, categoryParamsSchema } from '#schemas';
 
-type CategoryParams = { id: string };
+type CategoryParams = z.infer<typeof categoryParamsSchema>;
 
 type CategoryInputDTO = z.infer<typeof categoryInputSchema>;
 
