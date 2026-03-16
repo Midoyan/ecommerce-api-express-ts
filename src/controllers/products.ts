@@ -1,12 +1,12 @@
 import { Category, Product } from '#models';
-import { productInputSchema } from '#schemas';
+import { productInputSchema, productParamsSchema, productQuerySchema } from '#schemas';
 import { normalize } from '#utils';
 import type { RequestHandler } from 'express';
 import { isValidObjectId } from 'mongoose';
 import { z } from 'zod/v4';
 
-type ProductParams = { id: string };
-type ProductQuery = { categoryId?: string };
+type ProductParams = z.infer<typeof productParamsSchema>;
+type ProductQuery = z.infer<typeof productQuerySchema>;
 
 type ProductInputDTO = z.infer<typeof productInputSchema>;
 
