@@ -1,86 +1,73 @@
-# WBS Node.js TypeScript Backend Scaffold
+# Ecommerce API (Node.js + TypeScript)
 
-A modern, production-ready scaffold for Node.js backend projects using TypeScript with ES modules support.
+REST API for users, categories, products, and orders.
 
-## 🚀 Quick Start
+## Tech Stack
 
-### Setup
+- Node.js + Express 5
+- TypeScript
+- MongoDB + Mongoose
+- Zod (request validation)
+- Swagger UI + OpenAPI docs
+
+## Quick Start
+
+1. Install dependencies:
 
 ```bash
-# Clone the template repository
-git clone https://github.com/WebDev-WBSCodingSchool/wbs-node-ts-template.git your-project-name
-
-# Navigate to your project
-cd your-project-name
-
-# Remove the existing git history and reinitialize
-rm -rf .git
-git init
-
-# Install dependencies
 npm install
+```
 
-# Start development
+2. Create a .env file in the project root:
+
+```env
+MONGO_URI=mongodb://localhost:27017
+```
+
+3. Run in development:
+
+```bash
 npm run dev
 ```
 
-## 📁 Project Structure
+Server runs on http://localhost:3000.
 
-```bash
-.
-├── package-lock.json   # Dependency lock file (auto-generated)
-├── package.json        # Project configuration and dependencies
-├── README.md          # This file
-├── src
-│   └── app.ts          # Application entry point
-└── tsconfig.json       # TypeScript configuration
+## Scripts
+
+- npm run dev: Run with watch mode using source files.
+- npm run build: Compile TypeScript into dist.
+- npm run start: Build and run compiled app.
+
+## API Routes
+
+- /users
+- /categories
+- /products
+- /orders
+
+Each resource supports standard CRUD operations.
+
+## API Documentation
+
+- Swagger UI: http://localhost:3000/docs
+- OpenAPI JSON: http://localhost:3000/docs/openapi.json
+
+## Project Structure
+
+```text
+src/
+	app.ts
+	controllers/
+	db/
+	middleware/
+	models/
+	routes/
+	schemas/
+	utils/
 ```
 
-> **Note**: The `dist/` directory will be created automatically when you run `npm run build` to contain the compiled JavaScript output.
+## Notes
 
-## 🛠 Available Scripts
-
-| Command            | Description                                                |
-| ------------------ | ---------------------------------------------------------- |
-| `npm run dev`      | Start development server with file watching and hot reload |
-| `npm run build`    | Compile TypeScript to JavaScript                           |
-| `npm run start`    | Build and run the production version                       |
-| `npm run prebuild` | Clean the dist directory (runs automatically before build) |
-| `npm run prestart` | Build the project (runs automatically before start)        |
-
-## 🔧 Features
-
-### Modern TypeScript Configuration
-
-- **ES2022** target with modern JavaScript features
-- **Strict mode** enabled for better type safety
-- **ES Modules** support (native Node.js ESM)
-- **Path aliases** with `#` prefix to avoid conflicts
-- **Import extensions** support for better IDE experience
-
-### Development Experience
-
-- **File watching** with `--watch` flag for instant reloads
-- **TypeScript** compilation with proper module resolution
-- **Clean builds** with automatic dist cleanup
-- **Isolated modules** for better compilation performance
-
-### Path Aliases
-
-The project supports internal path aliases using the `#` prefix:
-
-```typescript
-// Instead of relative imports like this:
-import { helper } from '../../../utils';
-
-// You can use clean aliases like this:
-import { helper } from '#utils';
-```
-
-You need to add additional modules subpaths to the `imports` field in `package.json`
-
-## 📦 Dependencies
-
-### Runtime Dependencies
-
-- None (pure Node.js setup ready for your additions)
+- The app expects MONGO_URI to be set.
+- Validation uses Zod schemas in src/schemas.
+- Dist output is generated only after build.
